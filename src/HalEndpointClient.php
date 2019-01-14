@@ -74,9 +74,9 @@ class HalEndpointClient {
             $this->links = $this->data->_links;
             unset($this->data->_links);
         }
-        if(isset($this->data->_embeds)) {
-            $this->embeds = $this->data->_embeds;
-            unset($this->data->_embeds);
+        if(isset($this->data->_embedded)) {
+            $this->embeds = $this->data->_embedded;
+            unset($this->data->_embedded);
         }
     }
 
@@ -84,19 +84,19 @@ class HalEndpointClient {
         return $this->data;
     }
 
-    public function getEmbed(string $name) {
-        return new HalEmbed($name, $this->embeds->$name);
+    public function getEmbed(string $name): HalEmbed {
+        return new HalEmbed($name, $this->embeds->$name, $this->curlHelper);
     }
 
-    public function hasEmbed(string $name) {
+    public function hasEmbed(string $name): bool {
         return isset($this->embeds->$name);
     }
 
-    public function loadLink(string $ref) {
+    public function loadLink(string $ref): HalEndpointClient {
         return $this->loadLinkWithData($ref, NULL);
     }
 
-    public function loadLinkWithData(string $ref, $data) {
+    public function loadLinkWithData(string $ref, $data): HalEndpointClient {
         if($this->hasLink($ref)) {
             $link = $this->links->$ref;
             return HalEndpointClient::LoadRaw($link->href, $link->method, isset($link->datamode) ? $link->datamode : "query", $data, $this->curlHelper);
@@ -106,11 +106,11 @@ class HalEndpointClient {
         }
     }
 
-    public function hasLink(string $ref) {
+    public function hasLink(string $ref): bool {
         return isset($this->links->$ref);
     }
 
-    private static function GetQueryLink(string $href, $data) {
+    private static function GetQueryLink(string $href, $data): string {
         if($data !== NULL) {
             return $href . "?" . \http_build_query($data);
         }
