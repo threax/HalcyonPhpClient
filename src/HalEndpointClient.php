@@ -7,14 +7,33 @@ use threax\halcyonclient\CurlHelper;
 use threax\halcyonclient\CurlResult;
 use threax\halcyonclient\CurlRequest;
 use threax\halcyonclient\HalException;
+use threax\halcyonclient\HalEmbed;
 
 class HalEndpointClient {
     private static $HalcyonJsonMimeType = 'application/json+halcyon';
     private static $JsonMimeType = 'application/json';
 
     public static function Load(string $url, CurlHelper $curlHelper): HalEndpointClient {
-        $request = new CurlRequest($url, "GET");
+        return HalEndpointClient::LoadRaw($url, "GET", "query", NULL, $curlHelper);
+    }
+
+    private static function LoadRaw(string $url, string $method, string $datamode, $data, CurlHelper $curlHelper): HalEndpointClient {
+        //Build request
+        $request = new CurlRequest($url, $method);
         $request->addHeader('Accept', HalEndpointClient::$HalcyonJsonMimeType);
+        if($data !== NULL) {
+            switch($datamode) {
+                case "query":
+                    $request->setUrl(HalEndpointClient::GetQueryLink($url, $data));
+                    break;
+                case "body":
+                    break;
+                case "form":
+                    break;
+            }
+        }
+
+        //Do the request and process results
         $result = $curlHelper->load($request);
         $data = HalEndpointClient::ParseResult($result);
         if($result->statusCode > 199 && $result->statusCode < 300) {
@@ -22,7 +41,7 @@ class HalEndpointClient {
         }
         else {
             //Is the object a custom server message?
-            if(property_exists($data, "message")) {
+            if(isset($data->message)) {
                 throw new HalException($data, $result->statusCode);
             }
             else {
@@ -51,13 +70,50 @@ class HalEndpointClient {
     public function __construct($data, CurlHelper $curlHelper){
         $this->curlHelper = $curlHelper;
         $this->data = $data;
-        if(\property_exists($this->data, '_links')) {
+        if(isset($this->data->_links)) {
             $this->links = $this->data->_links;
             unset($this->data->_links);
         }
-        if(\property_exists($this->data, '_embeds')) {
+        if(isset($this->data->_embeds)) {
             $this->embeds = $this->data->_embeds;
             unset($this->data->_embeds);
         }
+    }
+
+    public function getData() {
+        return $this->data;
+    }
+
+    public function getEmbed(string $name) {
+        return new HalEmbed($name, $this->embeds->$name);
+    }
+
+    public function hasEmbed(string $name) {
+        return isset($this->embeds->$name);
+    }
+
+    public function loadLink(string $ref) {
+        return $this->loadLinkWithData($ref, NULL);
+    }
+
+    public function loadLinkWithData(string $ref, $data) {
+        if($this->hasLink($ref)) {
+            $link = $this->links->$ref;
+            return HalEndpointClient::LoadRaw($link->href, $link->method, isset($link->datamode) ? $link->datamode : "query", $data, $this->curlHelper);
+        }
+        else {
+            throw new Exception("Cannot find link named " . $ref);
+        }
+    }
+
+    public function hasLink(string $ref) {
+        return isset($this->links->$ref);
+    }
+
+    private static function GetQueryLink(string $href, $data) {
+        if($data !== NULL) {
+            return $href . "?" . \http_build_query($data);
+        }
+        return $href;
     }
 }
