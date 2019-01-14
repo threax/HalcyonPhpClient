@@ -1,8 +1,8 @@
 <?php
 
-namespace spc\phphalcyon;
+namespace threax\halcyonclient;
 
-use spc\phphalcyon\ICurlRequestExtension;
+use threax\halcyonclient\ICurlRequestExtension;
 
 class AccessTokenCurlExtension implements ICurlRequestExtension {
     private $bearer;

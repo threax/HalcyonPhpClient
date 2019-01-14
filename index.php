@@ -2,9 +2,9 @@
 require __DIR__ . '/vendor/autoload.php';
 
 use Jumbojett\OpenIDConnectClient;
-use spc\phphalcyon\HalEndpointClient;
-use spc\phphalcyon\CurlHelper;
-use spc\phphalcyon\AccessTokenCurlExtension;
+use threax\halcyonclient\HalEndpointClient;
+use threax\halcyonclient\CurlHelper;
+use threax\halcyonclient\AccessTokenCurlExtension;
 
 $client = new HalEndpointClient();
 

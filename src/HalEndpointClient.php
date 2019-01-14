@@ -1,6 +1,6 @@
 <?php
 
-namespace spc\phphalcyon;
+namespace threax\halcyonclient;
 
 class HalEndpointClient {
 
