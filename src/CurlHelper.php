@@ -16,7 +16,7 @@ class CurlResult {
 
 class CurlHelper {
     private $ignoreCertErrors = false;
-    private $userAgent = "spc\\phphalcyon";
+    private $userAgent = "threax\\halcyonclient";
     private $certPath = __DIR__ . '/../certs/cacert.pem';
     private $requestExtensions = [];
 
