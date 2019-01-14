@@ -80,6 +80,12 @@ class CurlHelper {
                 curl_setopt($curl, CURLOPT_HTTPHEADER, $requestHeaders);
             }
 
+            //If the request has a body, set it
+            $body = $request->getBody();
+            if($body !== NULL) {
+                curl_setopt($curl, CURLOPT_POSTFIELDS, $body);
+            }
+
             // Setup Response Headers
             // Thanks to user Geoffery at https://stackoverflow.com/questions/9183178/can-php-curl-retrieve-response-headers-and-body-in-a-single-request
             $responseHeaders = [];
@@ -105,7 +111,7 @@ class CurlHelper {
             // Send the request & save response to $resp
             $resp = curl_exec($curl);
             if(!$resp){
-                throw new Exception('Error: "' . curl_error($curl) . '" - Code: ' . curl_errno($curl));
+                throw new Exception('Curl Error: "' . curl_error($curl) . '" - Code: ' . curl_errno($curl));
             }
             $respCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 

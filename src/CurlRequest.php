@@ -6,6 +6,7 @@ class CurlRequest {
     private $url;
     private $method;
     private $headers = array();
+    private $body = NULL;
 
     public function __construct(string $url, string $method){
         $this->url = $url;
@@ -30,5 +31,13 @@ class CurlRequest {
 
     public function getHeaders() {
         return $this->headers;
+    }
+
+    public function setBody($body): void {
+        $this->body = $body;
+    }
+
+    public function getBody() {
+        return $this->body;
     }
 }

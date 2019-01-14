@@ -24,11 +24,17 @@ class HalEndpointClient {
         if($data !== NULL) {
             switch($datamode) {
                 case "query":
+                    //Send the data in the query string
                     $request->setUrl(HalEndpointClient::GetQueryLink($url, $data));
                     break;
                 case "body":
+                    //Send entire object as json in the body
+                    $request->addHeader('Content-Type', HalEndpointClient::$JsonMimeType);
+                    $request->setBody(\json_encode($data));
                     break;
                 case "form":
+                    //Convert the data to an array through json encode and set that as the request body.
+                    $request->setBody(json_decode(\json_encode($data), true));
                     break;
             }
         }
@@ -45,7 +51,7 @@ class HalEndpointClient {
                 throw new HalException($data, $result->statusCode);
             }
             else {
-                throw new Exception("Generic server error with code " . $response->statusCode . " returned.");
+                throw new Exception("Generic server error with code " . $result->statusCode . " returned.");
             }
         }
     }
@@ -63,9 +69,9 @@ class HalEndpointClient {
     }
 
     private $data;
-    private $curlHelper;
     private $links;
     private $embeds;
+    private $curlHelper;
 
     public function __construct($data, CurlHelper $curlHelper){
         $this->curlHelper = $curlHelper;
