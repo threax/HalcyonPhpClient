@@ -49,7 +49,8 @@ class CurlHelper {
             curl_setopt_array($curl, array(
                 CURLOPT_RETURNTRANSFER => 1,
                 CURLOPT_URL => $request->getUrl(),
-                CURLOPT_USERAGENT => $this->userAgent
+                CURLOPT_USERAGENT => $this->userAgent,
+                CURLOPT_CUSTOMREQUEST => $request->getMethod()
             ));
 
             // Thanks to user Geoffery at https://stackoverflow.com/questions/9183178/can-php-curl-retrieve-response-headers-and-body-in-a-single-request
