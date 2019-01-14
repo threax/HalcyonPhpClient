@@ -119,6 +119,23 @@ class HalEndpointClient {
         return isset($this->links->$ref);
     }
 
+    public function getLink(string $ref) {
+        return $this->links->$ref;
+    }
+
+    public function loadLinkDoc(string $ref, $data = NULL): HalEndpointClient {
+        if($data === NULL) {
+            return $this->loadLink($ref . ".Docs");
+        }
+        else {
+            return $this->loadLinkWithData($ref . ".Docs", $data);
+        }
+    }
+
+    public function hasLinkDoc(string $ref): bool {
+        return $this->hasLink($this->links->$ref . ".Docs");
+    }
+
     private static function GetQueryLink(string $href, $data): string {
         if($data !== NULL) {
             return $href . "?" . \http_build_query($data);
