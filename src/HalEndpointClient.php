@@ -21,22 +21,20 @@ class HalEndpointClient {
         //Build request
         $request = new CurlRequest($url, $method);
         $request->addHeader('Accept', HalEndpointClient::$HalcyonJsonMimeType);
-        if($data !== NULL) {
-            switch($datamode) {
-                case "query":
-                    //Send the data in the query string
-                    $request->setUrl(HalEndpointClient::GetQueryLink($url, $data));
-                    break;
-                case "body":
-                    //Send entire object as json in the body
-                    $request->addHeader('Content-Type', HalEndpointClient::$JsonMimeType);
-                    $request->setBody(\json_encode($data));
-                    break;
-                case "form":
-                    //Convert the data to an array through json encode and set that as the request body.
-                    $request->setBody(json_decode(\json_encode($data), true));
-                    break;
-            }
+        switch($datamode) {
+            case "query":
+                //Send the data in the query string
+                $request->setUrl(HalEndpointClient::GetQueryLink($url, $data));
+                break;
+            case "body":
+                //Send entire object as json in the body
+                $request->addHeader('Content-Type', HalEndpointClient::$JsonMimeType);
+                $request->setBody(\json_encode($data));
+                break;
+            case "form":
+                //Convert the data to an array through json encode and set that as the request body.
+                $request->setBody(json_decode(\json_encode($data), true));
+                break;
         }
 
         //Do the request and process results
@@ -105,6 +103,11 @@ class HalEndpointClient {
     public function loadLinkWithData(string $ref, $data): HalEndpointClient {
         if($this->hasLink($ref)) {
             $link = $this->links->$ref;
+            //This forces all incoming data to be an object while allowing the user to pass an array.
+            //The way the hal interface works there will always be an object wrapper around any arrays that should be passed.
+            if(is_array($data)) {
+                $data = (object)$data;
+            }
             return HalEndpointClient::LoadRaw($link->href, $link->method, isset($link->datamode) ? $link->datamode : "query", $data, $this->curlHelper);
         }
         else {
