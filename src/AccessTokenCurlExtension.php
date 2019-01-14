@@ -1,6 +1,10 @@
 <?php
 
-class AccessTokenCurlExtension {
+namespace spc\phphalcyon;
+
+use spc\phphalcyon\ICurlRequestExtension;
+
+class AccessTokenCurlExtension implements ICurlRequestExtension {
     private $bearer;
 
     public function __construct(string $bearer){

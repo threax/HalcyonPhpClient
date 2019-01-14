@@ -4,10 +4,6 @@ namespace spc\phphalcyon;
 
 use \Exception;
 
-interface ICurlRequestExtension {
-    public function addConfig($curl);
-}
-
 class CurlResult {
     public $statusCode;
     public $content;
@@ -37,7 +33,7 @@ class CurlHelper {
     }
 
     public function addRequestExtension(ICurlRequestExtension $ext){
-        array_push($this->requestExtensions);
+        array_push($this->requestExtensions, $ext);
     }
 
     public function load($url): CurlResult {
