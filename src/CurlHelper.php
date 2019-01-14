@@ -3,16 +3,7 @@
 namespace threax\halcyonclient;
 
 use \Exception;
-
-class CurlResult {
-    public $statusCode;
-    public $content;
-
-    public function __construct($statusCode, $content){
-        $this->statusCode = $statusCode;
-        $this->content = $content;
-    }
-}
+use threax\halcyonclient\CurlResult;
 
 class CurlHelper {
     private $ignoreCertErrors = false;
@@ -34,6 +25,14 @@ class CurlHelper {
 
     public function addRequestExtension(ICurlRequestExtension $ext){
         array_push($this->requestExtensions, $ext);
+    }
+
+    public function getUserAgent(): string {
+        return $this->ignoreCertErrors;
+    }
+
+    public function setUserAgent(string $value): void {
+        $this->userAgent = $value;
     }
 
     public function load($url): CurlResult {
