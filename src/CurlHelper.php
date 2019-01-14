@@ -53,27 +53,6 @@ class CurlHelper {
                 CURLOPT_CUSTOMREQUEST => $request->getMethod()
             ));
 
-            // Thanks to user Geoffery at https://stackoverflow.com/questions/9183178/can-php-curl-retrieve-response-headers-and-body-in-a-single-request
-            $headers = [];
-            curl_setopt($curl, CURLOPT_HEADERFUNCTION,
-                function($curl, $header) use (&$headers)
-                {
-                    // this function is called by curl for each header received
-                    $len = strlen($header);
-                    $header = explode(':', $header, 2);
-                    if (count($header) < 2) // ignore invalid headers
-                        return $len;
-
-                    $name = strtolower(trim($header[0]));
-                    if (!array_key_exists($name, $headers))
-                        $headers[$name] = [trim($header[1])];
-                    else
-                        $headers[$name][] = trim($header[1]);
-
-                    return $len;
-                }
-            );
-
             //Setup ssl options
             if($this->ignoreCertErrors){
                 curl_setopt_array($curl, array(
@@ -89,7 +68,7 @@ class CurlHelper {
                 }
             }
 
-            //Setup Headers
+            //Setup Request Headers
             $requestHeaders = [];
             $hasHeader = false;
             foreach ($request->getHeaders() as $key => $value) {
@@ -101,6 +80,28 @@ class CurlHelper {
                 curl_setopt($curl, CURLOPT_HTTPHEADER, $requestHeaders);
             }
 
+            // Setup Response Headers
+            // Thanks to user Geoffery at https://stackoverflow.com/questions/9183178/can-php-curl-retrieve-response-headers-and-body-in-a-single-request
+            $responseHeaders = [];
+            curl_setopt($curl, CURLOPT_HEADERFUNCTION,
+                function($curl, $header) use (&$responseHeaders)
+                {
+                    // this function is called by curl for each header received
+                    $len = strlen($header);
+                    $header = explode(':', $header, 2);
+                    if (count($header) < 2) // ignore invalid headers
+                        return $len;
+
+                    $name = strtolower(trim($header[0]));
+                    if (!array_key_exists($name, $responseHeaders))
+                        $responseHeaders[$name] = [trim($header[1])];
+                    else
+                        $responseHeaders[$name][] = trim($header[1]);
+
+                    return $len;
+                }
+            );
+
             // Send the request & save response to $resp
             $resp = curl_exec($curl);
             if(!$resp){
@@ -108,7 +109,7 @@ class CurlHelper {
             }
             $respCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
-            return new CurlResult($respCode, $resp, $headers);
+            return new CurlResult($respCode, $resp, $responseHeaders);
         }
         finally{
             // Close request to clear up some resources
