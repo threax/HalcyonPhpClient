@@ -28,7 +28,7 @@ class AccessTokenCurlExtension implements ICurlRequestExtension {
         $this->ignoreCertErrors = $value;
     }
 
-    public function addConfig($curl) {
+    public function addConfig(CurlRequest $request) {
         if($this->token === null) {
             $oidc = new OpenIDConnectClient($this->idServerHost, $this->clientId, $this->clientSecret);
 
@@ -49,8 +49,6 @@ class AccessTokenCurlExtension implements ICurlRequestExtension {
             $this->token = $oidc->requestClientCredentialsToken()->access_token;
         }
 
-        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
-            'bearer: ' . $this->token
-        ));
+        $request->addHeader('bearer', $this->token);
     }
 }

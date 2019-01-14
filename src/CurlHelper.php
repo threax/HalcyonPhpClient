@@ -4,6 +4,7 @@ namespace threax\halcyonclient;
 
 use \Exception;
 use threax\halcyonclient\CurlResult;
+use threax\halcyonclient\CurlRequest;
 
 class CurlHelper {
     private $ignoreCertErrors = false;
@@ -35,18 +36,44 @@ class CurlHelper {
         $this->userAgent = $value;
     }
 
-    public function load($url): CurlResult {
+    public function load(CurlRequest $request): CurlResult {
+        //Add extensions to request
+        foreach ($this->requestExtensions as $ext) {
+            $ext->addConfig($request);
+        }
+
         $curl = curl_init();
 
         try{
             //Set basic options
             curl_setopt_array($curl, array(
                 CURLOPT_RETURNTRANSFER => 1,
-                CURLOPT_URL => $url,
+                CURLOPT_URL => $request->getUrl(),
                 CURLOPT_USERAGENT => $this->userAgent
             ));
 
-            //If we are ignoring cert errors, set those options
+            // Thanks to user Geoffery at https://stackoverflow.com/questions/9183178/can-php-curl-retrieve-response-headers-and-body-in-a-single-request
+            $headers = [];
+            curl_setopt($curl, CURLOPT_HEADERFUNCTION,
+                function($curl, $header) use (&$headers)
+                {
+                    // this function is called by curl for each header received
+                    $len = strlen($header);
+                    $header = explode(':', $header, 2);
+                    if (count($header) < 2) // ignore invalid headers
+                        return $len;
+
+                    $name = strtolower(trim($header[0]));
+                    if (!array_key_exists($name, $headers))
+                        $headers[$name] = [trim($header[1])];
+                    else
+                        $headers[$name][] = trim($header[1]);
+
+                    return $len;
+                }
+            );
+
+            //Setup ssl options
             if($this->ignoreCertErrors){
                 curl_setopt_array($curl, array(
                     //For dev
@@ -61,9 +88,16 @@ class CurlHelper {
                 }
             }
 
-            //Add user options
-            foreach ($this->requestExtensions as $ext) {
-                $ext->addConfig($curl);
+            //Setup Headers
+            $requestHeaders = [];
+            $hasHeader = false;
+            foreach ($request->getHeaders() as $key => $value) {
+                array_push($requestHeaders, $key . ": " . $value);
+                $hasHeader = true;
+            }
+            
+            if($hasHeader) {
+                curl_setopt($curl, CURLOPT_HTTPHEADER, $requestHeaders);
             }
 
             // Send the request & save response to $resp
@@ -73,7 +107,7 @@ class CurlHelper {
             }
             $respCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
-            return new CurlResult($respCode, $resp);
+            return new CurlResult($respCode, $resp, $headers);
         }
         finally{
             // Close request to clear up some resources

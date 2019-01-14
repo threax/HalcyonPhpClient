@@ -3,5 +3,5 @@
 namespace threax\halcyonclient;
 
 interface ICurlRequestExtension {
-    public function addConfig($curl);
+    public function addConfig(CurlRequest $request);
 }

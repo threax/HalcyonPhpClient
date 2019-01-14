@@ -5,14 +5,13 @@ use threax\halcyonclient\HalEndpointClient;
 use threax\halcyonclient\CurlHelper;
 use threax\halcyonclient\AccessTokenCurlExtension;
 
-$client = new HalEndpointClient();
-
+$curlHelper = new CurlHelper();
 $bearerExt = new AccessTokenCurlExtension('https://localhost:44390', 'PHPTest', 'notyetdefined', 'Spc.Authority');
 $bearerExt->setIgnoreCertErrors(true);
-
-$curlHelper = new CurlHelper();
 $curlHelper->addRequestExtension($bearerExt);
 $curlHelper->setIgnoreCertErrors(true);
-$result = $curlHelper->load("https://localhost:44395/api");
-echo $result->content;
-echo $result->statusCode;
+
+$client = HalEndpointClient::Load("https://localhost:44395/api", $curlHelper);
+
+//echo $result->content;
+//echo $result->statusCode;
