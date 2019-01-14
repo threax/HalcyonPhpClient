@@ -16,14 +16,14 @@ class HalEndpointClient {
         $request = new CurlRequest($url, "GET");
         $request->addHeader('Accept', HalEndpointClient::$HalcyonJsonMimeType);
         $result = $curlHelper->load($request);
-        $parsed = HalEndpointClient::ParseResult($result);
+        $data = HalEndpointClient::ParseResult($result);
         if($result->statusCode > 199 && $result->statusCode < 300) {
-            var_dump($parsed->_links);
+            return new HalEndpointClient($data, $curlHelper);
         }
         else {
             //Is the object a custom server message?
-            if(property_exists($parsed, "message")) {
-                throw new HalException($parsed, $result->statusCode);
+            if(property_exists($data, "message")) {
+                throw new HalException($data, $result->statusCode);
             }
             else {
                 throw new Exception("Generic server error with code " . $response->statusCode . " returned.");
@@ -43,7 +43,21 @@ class HalEndpointClient {
         }
     }
 
-    public function __construct(){
+    private $data;
+    private $curlHelper;
+    private $links;
+    private $embeds;
 
+    public function __construct($data, CurlHelper $curlHelper){
+        $this->curlHelper = $curlHelper;
+        $this->data = $data;
+        if(\property_exists($this->data, '_links')) {
+            $this->links = $this->data->_links;
+            unset($this->data->_links);
+        }
+        if(\property_exists($this->data, '_embeds')) {
+            $this->embeds = $this->data->_embeds;
+            unset($this->data->_embeds);
+        }
     }
 }
