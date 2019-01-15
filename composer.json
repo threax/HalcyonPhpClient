@@ -3,6 +3,7 @@
     "type": "library",
     "description": "Connect to .Net Core Api servers using Threax.AspNetCore.Halcyon.Ext",
     "homepage": "https://github.com/threax/HalcyonPhpClient",
+    "version": "0.0.0",
     "license": "MIT",
     "authors": [
         {
