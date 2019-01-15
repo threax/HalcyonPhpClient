@@ -1,5 +1,15 @@
 {
     "name": "threax/halcyonclient",
+    "type": "library",
+    "description": "Connect to .Net Core Api servers using Threax.AspNetCore.Halcyon.Ext",
+    "homepage": "https://github.com/threax/HalcyonPhpClient",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Andrew Piper",
+            "role": "Developer"
+        }
+    ],
     "require": {
         "jumbojett/openid-connect-php": "^0.8.0"
     },
