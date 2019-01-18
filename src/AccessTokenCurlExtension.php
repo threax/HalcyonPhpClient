@@ -24,7 +24,7 @@ class AccessTokenCurlExtension implements ICurlRequestExtension {
         return $this->ignoreCertErrors;
     }
 
-    public function setIgnoreCertErrors(bool $value): void {
+    public function setIgnoreCertErrors(bool $value) {
         $this->ignoreCertErrors = $value;
     }
 

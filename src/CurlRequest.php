@@ -13,7 +13,7 @@ class CurlRequest {
         $this->method = $method;
     }
 
-    public function setUrl(string $url): void {
+    public function setUrl(string $url) {
         $this->url = $url;
     }
 
@@ -25,7 +25,7 @@ class CurlRequest {
         return $this->method;
     }
 
-    public function addHeader(string $key, string $value): void {
+    public function addHeader(string $key, string $value) {
         $this->headers[$key] = $value;
     }
 
@@ -33,7 +33,7 @@ class CurlRequest {
         return $this->headers;
     }
 
-    public function setBody($body): void {
+    public function setBody($body) {
         $this->body = $body;
     }
 
