@@ -12,6 +12,7 @@ class AccessTokenCurlExtension implements ICurlRequestExtension {
     private $ignoreCertErrors = false;
     private $scopes;
     private $token = null;
+    private $expires;
 
     public function __construct(string $idServerHost, string $clientId, string $clientSecret, string ...$scopes){
         $this->idServerHost = $idServerHost;
@@ -29,7 +30,7 @@ class AccessTokenCurlExtension implements ICurlRequestExtension {
     }
 
     public function addConfig(CurlRequest $request) {
-        if($this->token === null) {
+        if($this->token === null || $this->expires < time()) {
             $oidc = new OpenIDConnectClient($this->idServerHost, $this->clientId, $this->clientSecret);
 
             if($this->ignoreCertErrors) {
@@ -47,6 +48,24 @@ class AccessTokenCurlExtension implements ICurlRequestExtension {
 
             // this assumes success (to validate check if the access_token property is there and a valid JWT) :
             $this->token = $oidc->requestClientCredentialsToken()->access_token;
+            if(!$this->token) {
+                throw new \Exception("Error logging into identity server for client " + $this->clientId);
+            }
+
+            $firstDot = strpos($this->token, ".");
+            if($firstDot == FALSE) {
+                throw new \Exception("Invalid JWT");
+            }
+            $lastDot = strpos($this->token, ".", $firstDot + 1);
+            if($lastDot == FALSE) {
+                throw new \Exception("Invalid JWT");
+            }
+
+            $jwtBase64 = substr($this->token, $firstDot + 1, $lastDot - $firstDot - 1);
+            $jwtJson = base64_decode($jwtBase64);
+            $jwt = json_decode($jwtJson);
+            $duration = ($jwt->exp - $jwt->nbf) * (3.0 / 4.0);
+            $this->expires = $jwt->nbf + $duration;
         }
 
         $request->addHeader('bearer', $this->token);
