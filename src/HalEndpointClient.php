@@ -29,7 +29,9 @@ class HalEndpointClient {
             case "body":
                 //Send entire object as json in the body
                 $request->addHeader('Content-Type', HalEndpointClient::$JsonMimeType);
-                $request->setBody(\json_encode($data));
+                $jsonData = \json_encode($data);
+                $request->addHeader('Content-Length', strlen($jsonData));
+                $request->setBody($jsonData);
                 break;
             case "form":
                 //Convert the data to an array through json encode and set that as the request body.
