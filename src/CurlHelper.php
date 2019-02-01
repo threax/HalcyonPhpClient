@@ -71,9 +71,16 @@ class CurlHelper {
             //Setup Request Headers
             $requestHeaders = [];
             $hasHeader = false;
+            $hasContentLength = false;
             foreach ($request->getHeaders() as $key => $value) {
                 array_push($requestHeaders, $key . ": " . $value);
                 $hasHeader = true;
+                $hasContentLength = $hasContentLength || strcasecmp ($key, "Content-Length") === 0;
+            }
+
+            if(!$hasContentLength && (strcasecmp($request->getMethod(), "POST") === 0 || strcasecmp($request->getMethod(), "PUT") === 0)) {
+                //Add content length if it is missing.
+                array_push($requestHeaders, "Content-Length: 0");
             }
             
             if($hasHeader) {
