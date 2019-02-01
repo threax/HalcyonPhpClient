@@ -47,10 +47,11 @@ class AccessTokenCurlExtension implements ICurlRequestExtension {
             }
 
             // this assumes success (to validate check if the access_token property is there and a valid JWT) :
-            $this->token = $oidc->requestClientCredentialsToken()->access_token;
-            if(!$this->token) {
-                throw new \Exception("Error logging into identity server for client " + $this->clientId);
+            $result = $oidc->requestClientCredentialsToken();
+            if(!isset($result->access_token)) {
+                throw new \Exception("Error logging into identity server for client " . $this->clientId . ". Message: " . $result->error);
             }
+            $this->token = $result->access_token;
 
             $firstDot = strpos($this->token, ".");
             if($firstDot == FALSE) {
